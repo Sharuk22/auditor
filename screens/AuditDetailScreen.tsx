@@ -1,217 +1,8 @@
-// import { Ionicons } from "@expo/vector-icons";
-// import { useNavigation, useRoute } from "@react-navigation/native";
-// import { LinearGradient } from "expo-linear-gradient";
-// import * as Location from "expo-location";
-// import React, { useState } from "react";
-// import {
-//   ActivityIndicator,
-//   Alert,
-//   SafeAreaView,
-//   ScrollView,
-//   StatusBar,
-//   Text,
-//   TouchableOpacity,
-//   View,
-// } from "react-native";
-// import tw from "twrnc";
-
-// // Widgets Import කිරීම (ඔබේ folder structure එක අනුව path එක නිවැරදි දැයි බලන්න)
-// import { ClockStatusCard } from "./widgets/ClockStatusCard";
-// import { DateCard } from "./widgets/DateCard";
-// import { InfoCard } from "./widgets/InfoCard";
-// import { LocationCard } from "./widgets/LocationCard";
-// import { NotesCard } from "./widgets/NotesCard";
-
-// const AuditDetailScreen = () => {
-//   const route = useRoute<any>();
-//   const navigation = useNavigation();
-
-//   // Params ලබා ගැනීම
-//   const { branchName, dateText } = route.params || {
-//     branchName: "Unknown",
-//     dateText: "",
-//   };
-
-//   // States
-//   const [locationText, setLocationText] = useState("Add your location");
-//   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-//   const [isClockedIn, setIsClockedIn] = useState(false);
-//   const [clockInTime, setClockInTime] = useState<Date | null>(null);
-//   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
-//   const [notes, setNotes] = useState("");
-//   const [isSaving, setIsSaving] = useState(false);
-
-//   // 📍 Location Logic
-//   const getCurrentLocation = async () => {
-//     setIsLoadingLocation(true);
-//     try {
-//       let { status } = await Location.requestForegroundPermissionsAsync();
-//       if (status !== "granted") {
-//         Alert.alert("Permission Denied", "ස්ථානය ලබා ගැනීමට අවසර අවශ්‍යයි.");
-//         return;
-//       }
-//       let location = await Location.getCurrentPositionAsync({
-//         accuracy: Location.Accuracy.High,
-//       });
-//       const { latitude, longitude } = location.coords;
-//       setLocationText(
-//         `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`,
-//       );
-//     } catch (error) {
-//       Alert.alert("Error", "ස්ථානය ලබා ගැනීමට නොහැකි විය.");
-//     } finally {
-//       setIsLoadingLocation(false);
-//     }
-//   };
-
-//   // ⏰ Clock In/Out Logic
-//   const handleClockAction = () => {
-//     const now = new Date();
-//     if (!isClockedIn) {
-//       setIsClockedIn(true);
-//       setClockInTime(now);
-//       setClockOutTime(null);
-//       Alert.alert(
-//         "Clocked In",
-//         `${now.toLocaleTimeString()} ට සාර්ථකව ඇතුළු විය.`,
-//       );
-//     } else {
-//       setIsClockedIn(false);
-//       setClockOutTime(now);
-//       Alert.alert(
-//         "Clocked Out",
-//         `${now.toLocaleTimeString()} ට සාර්ථකව පිටවිය.`,
-//       );
-//     }
-//   };
-
-//   // 💾 Save Logic
-//   const saveAudit = () => {
-//     if (!clockInTime) {
-//       Alert.alert("Wait!", "කරුණාකර ප්‍රථමයෙන් Clock-In වන්න.");
-//       return;
-//     }
-//     setIsSaving(true);
-//     setTimeout(() => {
-//       setIsSaving(false);
-//       Alert.alert("Success", "Audit details saved successfully!", [
-//         { text: "OK", onPress: () => navigation.goBack() },
-//       ]);
-//     }, 1500);
-//   };
-
-//   return (
-//     <SafeAreaView style={tw`flex-1 bg-white`}>
-//       <StatusBar barStyle="light-content" />
-
-//       {/* HEADER */}
-//       <LinearGradient
-//         colors={["#BAE6FD", "#38BDF8", "#1E40AF"]}
-//         style={tw`px-4 pt-10 pb-6 rounded-b-[30px] shadow-md`}
-//       >
-//         <View style={tw`flex-row items-center`}>
-//           <TouchableOpacity
-//             onPress={() => navigation.goBack()}
-//             style={tw`p-2 bg-white/20 rounded-full`}
-//           >
-//             <Ionicons name="arrow-back" size={24} color="white" />
-//           </TouchableOpacity>
-//           <View style={tw`ml-4`}>
-//             <Text style={tw`text-white text-xl font-bold`}>Audit Details</Text>
-//             <Text style={tw`text-blue-100 text-sm`}>{branchName}</Text>
-//           </View>
-//         </View>
-//       </LinearGradient>
-
-//       <ScrollView
-//         contentContainerStyle={tw`p-5 pb-10`}
-//         showsVerticalScrollIndicator={false}
-//       >
-//         {/* 1. Branch Info Card */}
-//         <InfoCard title="Branch Name" value={branchName} icon="business" />
-
-//         {/* 2. Date Card */}
-//         <DateCard
-//           date={dateText}
-//           onTap={() => Alert.alert("Note", "දිනය වෙනස් කළ නොහැක.")}
-//         />
-
-//         {/* 3. Location Card */}
-//         <LocationCard
-//           location={locationText}
-//           isLoading={isLoadingLocation}
-//           onTap={getCurrentLocation}
-//         />
-
-//         {/* 4. Clock Status Log (පෙන්වන්නේ ClockIn හෝ Out වී ඇත්නම් පමණි) */}
-//         {isClockedIn && clockInTime && (
-//           <ClockStatusCard isClockedIn={true} time={clockInTime} />
-//         )}
-//         {!isClockedIn && clockOutTime && (
-//           <ClockStatusCard isClockedIn={false} time={clockOutTime} />
-//         )}
-
-//         {/* 5. Clock Action Button */}
-//         <TouchableOpacity
-//           onPress={handleClockAction}
-//           activeOpacity={0.8}
-//           style={tw`overflow-hidden rounded-2xl mb-6 shadow-lg`}
-//         >
-//           <LinearGradient
-//             colors={
-//               isClockedIn ? ["#F87171", "#B91C1C"] : ["#0EA5E9", "#1D4ED8"]
-//             }
-//             start={{ x: 0, y: 0 }}
-//             end={{ x: 1, y: 0 }}
-//             style={tw`flex-row justify-center items-center py-4`}
-//           >
-//             <Ionicons
-//               name={isClockedIn ? "log-out" : "log-in"}
-//               size={24}
-//               color="white"
-//             />
-//             <Text style={tw`text-white font-bold text-lg ml-2`}>
-//               {isClockedIn ? "Clock Out Now" : "Clock In Now"}
-//             </Text>
-//           </LinearGradient>
-//         </TouchableOpacity>
-
-//         {/* 6. Notes Card */}
-//         <NotesCard value={notes} onChangeText={setNotes} />
-
-//         {/* 7. Save Button */}
-//         <TouchableOpacity
-//           onPress={saveAudit}
-//           disabled={isSaving}
-//           style={tw`${isSaving ? "bg-gray-400" : "bg-[#1E40AF]"} py-4 rounded-2xl items-center shadow-xl mt-2`}
-//         >
-//           {isSaving ? (
-//             <ActivityIndicator color="white" />
-//           ) : (
-//             <View style={tw`flex-row items-center`}>
-//               <Ionicons
-//                 name="cloud-upload-outline"
-//                 size={20}
-//                 color="white"
-//                 style={tw`mr-2`}
-//               />
-//               <Text style={tw`text-white font-bold text-lg`}>
-//                 Finish & Save Audit
-//               </Text>
-//             </View>
-//           )}
-//         </TouchableOpacity>
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// };
-
-// export default AuditDetailScreen;
-
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import * as DocumentPicker from "expo-document-picker";
 import { LinearGradient } from "expo-linear-gradient";
-import * as Location from "expo-location";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -231,89 +22,109 @@ import tw from "twrnc";
 import { ClockStatusCard } from "./widgets/ClockStatusCard";
 import { DateCard } from "./widgets/DateCard";
 import { InfoCard } from "./widgets/InfoCard";
-import { LocationCard } from "./widgets/LocationCard";
 import { NotesCard } from "./widgets/NotesCard";
 
 const AuditDetailScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
-  const { branchName, dateText } = route.params || {
-    branchName: "Unknown",
+  const { branchName, dateText, auditId } = route.params || {
+    branchName: "Unknown Branch",
     dateText: new Date().toISOString().split("T")[0],
+    auditId: "unknown",
   };
 
-  // States
   const [selectedDate, setSelectedDate] = useState(dateText);
-  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
-  const [locationText, setLocationText] = useState("Add your location");
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [attachment, setAttachment] = useState<any>(null);
 
-  // 📍 Location Logic
-  const getCurrentLocation = async () => {
-    setIsLoadingLocation(true);
+  // SAVE audit to AsyncStorage
+  const saveAudit = async (data: any) => {
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission Denied", "ස්ථානය ලබා ගැනීමට අවසර අවශ්‍යයි.");
-        return;
-      }
-      let location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      setLocationText(
-        `Lat: ${location.coords.latitude.toFixed(6)}, Lng: ${location.coords.longitude.toFixed(6)}`,
-      );
-    } catch (error) {
-      Alert.alert("Error", "ස්ථානය ලබා ගැනීමට නොහැකි විය.");
-    } finally {
-      setIsLoadingLocation(false);
+      const raw = await AsyncStorage.getItem("auditLogs");
+      const logs = raw ? JSON.parse(raw) : {};
+      logs[auditId] = data;
+      await AsyncStorage.setItem("auditLogs", JSON.stringify(logs));
+    } catch (e) {
+      console.error("Failed to save audit:", e);
     }
   };
 
-  // ⏰ Clock In/Out Logic
-  const handleClockAction = () => {
-    const now = new Date();
-    if (!isClockedIn) {
-      setIsClockedIn(true);
-      setClockInTime(now);
-      setClockOutTime(null);
-      Alert.alert("Clocked In", `${now.toLocaleTimeString()} ට ඇතුළු විය.`);
-    } else {
-      setIsClockedIn(false);
-      setClockOutTime(now);
-      Alert.alert("Clocked Out", `${now.toLocaleTimeString()} ට පිටවිය.`);
-    }
-  };
-
-  // 💾 Save Logic
-  const saveAudit = () => {
-    if (!clockInTime) {
-      Alert.alert("Wait!", "කරුණාකර ප්‍රථමයෙන් Clock-In වන්න.");
+  // CLOCK IN
+  const handleClockIn = async () => {
+    if (clockInTime) {
+      Alert.alert("Already Clocked In");
       return;
     }
+    const now = new Date();
+    setClockInTime(now);
+
+    await saveAudit({
+      auditId,
+      branchName,
+      date: selectedDate,
+      clockIn: now.toISOString(),
+    });
+
+    Alert.alert("Clock In", "Clocked in successfully");
+  };
+
+  // ATTACH FILE
+  const handleAttachFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      multiple: false,
+      copyToCacheDirectory: true,
+    });
+
+    if (!result.canceled) {
+      setAttachment(result.assets[0]);
+    }
+  };
+
+  // FINISH & SAVE (Clock Out automatically)
+  const finishAudit = async () => {
+    if (!clockInTime) {
+      Alert.alert("Error", "Please Clock In first");
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      Alert.alert("Success", "Audit details saved successfully!", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
-    }, 1500);
+    const now = new Date();
+    setClockOutTime(now);
+
+    const auditData = {
+      auditId,
+      branchName,
+      date: selectedDate,
+      clockIn: clockInTime.toISOString(),
+      clockOut: now.toISOString(),
+      notes,
+      attachment,
+      completedAt: now.toISOString(),
+    };
+
+    await saveAudit(auditData);
+
+    setIsSaving(false);
+
+    // Navigate to dashboard after saving
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "AuditorDashboard" }],
+    });
   };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <StatusBar barStyle="light-content" />
 
-      {/* HEADER */}
       <LinearGradient
         colors={["#BAE6FD", "#38BDF8", "#1E40AF"]}
-        style={tw`px-4 pt-10 pb-6 rounded-b-[30px] shadow-md`}
+        style={tw`px-4 pt-10 pb-6 rounded-b-[30px]`}
       >
         <View style={tw`flex-row items-center`}>
           <TouchableOpacity
@@ -329,115 +140,72 @@ const AuditDetailScreen = () => {
         </View>
       </LinearGradient>
 
-      <ScrollView
-        contentContainerStyle={tw`p-5 pb-10`}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={tw`p-5 pb-10`}>
         <InfoCard title="Branch Name" value={branchName} icon="business" />
+        <DateCard date={selectedDate} onTap={() => setShowCalendar(true)} />
 
-        {/* 2. Date Card */}
-        <DateCard
-          date={selectedDate}
-          onTap={() => setIsCalendarVisible(true)}
-        />
-
-        {/* --- CUSTOM CALENDAR MODAL --- */}
-        <Modal visible={isCalendarVisible} transparent animationType="fade">
-          <View style={tw`flex-1 justify-center items-center bg-black/50 px-5`}>
-            <View style={tw`bg-white rounded-3xl p-4 w-full shadow-2xl`}>
-              <Text
-                style={tw`text-[#1E40AF] text-lg font-bold mb-4 text-center`}
-              >
-                Select Audit Date
-              </Text>
-
+        <Modal visible={showCalendar} transparent>
+          <View style={tw`flex-1 bg-black/50 justify-center px-6`}>
+            <View style={tw`bg-white rounded-3xl p-4`}>
               <Calendar
-                current={selectedDate}
                 onDayPress={(day) => {
                   setSelectedDate(day.dateString);
-                  setIsCalendarVisible(false);
+                  setShowCalendar(false);
                 }}
                 markedDates={{
-                  [selectedDate]: { selected: true, selectedColor: "#1E40AF" },
-                }}
-                theme={{
-                  todayTextColor: "#1E40AF",
-                  dayTextColor: "#3B82F6",
-                  arrowColor: "#1E40AF",
-                  monthTextColor: "#3B82F6",
-                  textDayFontWeight: "600",
-                  textMonthFontWeight: "bold",
+                  [selectedDate]: { selected: true },
                 }}
               />
-
               <TouchableOpacity
-                onPress={() => setIsCalendarVisible(false)}
-                style={tw`mt-4 py-3 bg-gray-300 rounded-xl items-center`}
+                onPress={() => setShowCalendar(false)}
+                style={tw`mt-4 py-3 bg-gray-300 rounded-xl`}
               >
-                <Text style={tw`text-gray-700 font-bold`}>Cancel</Text>
+                <Text style={tw`text-center font-bold`}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        <LocationCard
-          location={locationText}
-          isLoading={isLoadingLocation}
-          onTap={getCurrentLocation}
-        />
+        {clockInTime && <ClockStatusCard isClockedIn time={clockInTime} />}
+        {clockOutTime && <ClockStatusCard isClockedIn={false} time={clockOutTime} />}
 
-        {isClockedIn && clockInTime && (
-          <ClockStatusCard isClockedIn={true} time={clockInTime} />
-        )}
-        {!isClockedIn && clockOutTime && (
-          <ClockStatusCard isClockedIn={false} time={clockOutTime} />
+        {!clockInTime && (
+          <TouchableOpacity
+            onPress={handleClockIn}
+            style={tw`rounded-2xl overflow-hidden my-4`}
+          >
+            <LinearGradient
+              colors={["#0EA5E9", "#1D4ED8"]}
+              style={tw`py-4 flex-row justify-center items-center`}
+            >
+              <Ionicons name="log-in" size={22} color="white" />
+              <Text style={tw`text-white font-bold ml-2`}>Clock In</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          onPress={handleClockAction}
-          activeOpacity={0.8}
-          style={tw`overflow-hidden rounded-2xl mb-6 shadow-lg`}
+          onPress={handleAttachFile}
+          style={tw`border border-dashed border-blue-400 rounded-2xl p-4 mb-4`}
         >
-          <LinearGradient
-            colors={
-              isClockedIn ? ["#F87171", "#B91C1C"] : ["#0EA5E9", "#1D4ED8"]
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={tw`flex-row justify-center items-center py-4`}
-          >
-            <Ionicons
-              name={isClockedIn ? "log-out" : "log-in"}
-              size={24}
-              color="white"
-            />
-            <Text style={tw`text-white font-bold text-lg ml-2`}>
-              {isClockedIn ? "Clock Out Now" : "Clock In Now"}
-            </Text>
-          </LinearGradient>
+          <Text style={tw`text-blue-800 font-semibold`}>
+            {attachment ? attachment.name : "Attach file"}
+          </Text>
         </TouchableOpacity>
 
         <NotesCard value={notes} onChangeText={setNotes} />
 
         <TouchableOpacity
-          onPress={saveAudit}
-          disabled={isSaving}
-          style={tw`${isSaving ? "bg-gray-400" : "bg-[#1E40AF]"} py-4 rounded-2xl items-center shadow-xl mt-2`}
+          onPress={finishAudit}
+          disabled={!clockInTime || isSaving}
+          style={tw`bg-[#1E40AF] py-4 rounded-2xl items-center mt-4`}
         >
           {isSaving ? (
             <ActivityIndicator color="white" />
           ) : (
-            <View style={tw`flex-row items-center`}>
-              <Ionicons
-                name="cloud-upload-outline"
-                size={20}
-                color="white"
-                style={tw`mr-2`}
-              />
-              <Text style={tw`text-white font-bold text-lg`}>
-                Finish & Save Audit
-              </Text>
-            </View>
+            <Text style={tw`text-white font-bold text-lg`}>
+              Finish & Save Audit
+            </Text>
           )}
         </TouchableOpacity>
       </ScrollView>
