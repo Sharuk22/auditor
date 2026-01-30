@@ -1,3 +1,140 @@
+// import { Ionicons } from "@expo/vector-icons";
+// import { useNavigation } from "@react-navigation/native";
+// import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+// import { LinearGradient } from "expo-linear-gradient";
+// import React from "react";
+// import {
+//   FlatList,
+//   SafeAreaView,
+//   StatusBar,
+//   Text,
+//   TouchableOpacity,
+//   View,
+// } from "react-native";
+// import tw from "twrnc";
+// import { RootStackParamList } from "../App"; // App.tsx එකෙන් type එක import කරගන්න
+
+// type NavigationProp = NativeStackNavigationProp<
+//   RootStackParamList,
+//   "AuditorDashboard"
+// >;
+
+// const AuditorDashboardScreen = () => {
+//   const navigation = useNavigation<NavigationProp>();
+
+//   // Flutter code එකේ තිබූAssignments වලට සමාන දත්ත
+//   const audits = [
+//     { id: "1", branch_name: "Colombo Main Branch", audit_date: "2026-01-25" },
+//     { id: "2", branch_name: "Kandy City Center", audit_date: "2026-01-28" },
+//     { id: "3", branch_name: "Galle Fort Branch", audit_date: "2026-02-05" },
+//     { id: "4", branch_name: "Matara Junction", audit_date: "2026-02-10" },
+//   ];
+
+//   const handleLogout = () => {
+//     // Login පිටුවට යෑම සහ navigation history එක clear කිරීම
+//     navigation.replace("Login");
+//   };
+
+//   // එක් එක් ListTile එක (Flutter _OutlinedTile එකට සමානයි)
+//   const renderAuditItem = ({ item }: { item: (typeof audits)[0] }) => (
+//     <TouchableOpacity
+//       activeOpacity={0.7}
+//       style={tw`bg-white border border-blue-100 rounded-2xl px-4 py-4 flex-row items-center mb-4 shadow-sm`}
+//       onPress={() => alert(`${item.branch_name} තේරුවා`)} // පසුව AuditDetail එකට navigate කිරීමට
+//     >
+//       <View style={tw`bg-blue-50 p-3 rounded-xl mr-4`}>
+//         <Ionicons name="business" size={24} color="#1E40AF" />
+//       </View>
+
+//       <View style={tw`flex-1`}>
+//         <Text style={tw`text-[#1E3A8A] font-bold text-base`}>
+//           {item.branch_name}
+//         </Text>
+//         <Text style={tw`text-gray-500 text-sm mt-1`}>
+//           <Ionicons name="calendar-outline" size={12} /> {item.audit_date}
+//         </Text>
+//       </View>
+
+//       <Ionicons name="chevron-forward" size={20} color="#1E40AF" />
+//     </TouchableOpacity>
+//   );
+
+//   return (
+//     <SafeAreaView style={tw`flex-1 bg-gray-50`}>
+//       <StatusBar barStyle="light-content" />
+
+//       {/* HEADER: Flutter Gradient Header එකට සමානයි */}
+//       <LinearGradient
+//         colors={["#BAE6FD", "#38BDF8", "#1E40AF"]}
+//         start={{ x: 0, y: 0 }}
+//         end={{ x: 1, y: 1 }}
+//         style={tw`px-6 pt-12 pb-10 rounded-b-[32px]`}
+//       >
+//         <View style={tw`flex-row justify-between items-center`}>
+//           <View>
+//             <Text style={tw`text-blue-900 text-sm font-medium opacity-80`}>
+//               Welcome,
+//             </Text>
+//             <Text style={tw`text-white text-2xl font-bold`}>
+//               Auditor Dashboard
+//             </Text>
+//           </View>
+//           <View style={tw`bg-white/30 p-2 rounded-full border border-white/50`}>
+//             <Ionicons name="person" size={30} color="white" />
+//           </View>
+//         </View>
+//       </LinearGradient>
+
+//       {/* BODY: ලැයිස්තුව (Assignments) */}
+//       <View style={tw`flex-1 px-5 mt-6`}>
+//         <View style={tw`flex-row justify-between items-end mb-4`}>
+//           <Text style={tw`text-[#1E3A8A] text-lg font-bold`}>
+//             Assigned Audits
+//           </Text>
+//           <Text style={tw`text-blue-500 text-sm`}>{audits.length} Pending</Text>
+//         </View>
+
+//         <FlatList
+//           data={audits}
+//           renderItem={renderAuditItem}
+//           keyExtractor={(item) => item.id}
+//           showsVerticalScrollIndicator={false}
+//           contentContainerStyle={tw`pb-10`}
+//           ListEmptyComponent={
+//             <View style={tw`mt-20 items-center`}>
+//               <Ionicons
+//                 name="document-text-outline"
+//                 size={50}
+//                 color="#cbd5e1"
+//               />
+//               <Text style={tw`text-gray-400 mt-2`}>No assignments found</Text>
+//             </View>
+//           }
+//         />
+//       </View>
+
+//       {/* FOOTER: Logout Button */}
+//       <View style={tw`p-6 bg-white border-t border-gray-100`}>
+//         <TouchableOpacity
+//           onPress={handleLogout}
+//           activeOpacity={0.8}
+//           style={tw`bg-[#1E40AF] flex-row justify-center items-center py-4 rounded-2xl shadow-lg`}
+//         >
+//           <Ionicons
+//             name="log-out-outline"
+//             size={22}
+//             color="white"
+//             style={tw`mr-2`}
+//           />
+//           <Text style={tw`text-white font-bold text-lg`}>Log Out</Text>
+//         </TouchableOpacity>
+//       </View>
+//     </SafeAreaView>
+//   );
+// };
+
+// export default AuditorDashboardScreen;
+
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -5,18 +142,16 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
+  Alert,
   FlatList,
-  RefreshControl,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import tw from "twrnc";
-import { RootStackParamList } from "../App";
+import { RootStackParamList } from "../App"; // App.tsx එකේ path එක නිවැරදි දැයි බලන්න
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,139 +162,187 @@ const AuditorDashboardScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const isFocused = useIsFocused();
 
-  const [userName, setUserName] = useState("Loading...");
-  const [userRole, setUserRole] = useState("Loading...");
-  const [district, setDistrict] = useState("Loading...");
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({ pending: 0, assignedAudits: 0 });
-  const [auditLogs, setAuditLogs] = useState<any>({});
+  const [clockEvents, setClockEvents] = useState<
+    Record<
+      string,
+      {
+        auditId: string;
+        branchName: string;
+        date: string;
+        clockInTime: string | null;
+        clockOutTime: string | null;
+        updatedAt: string;
+      }
+    >
+  >({});
 
-  // Load user info
+  // Load saved clock events whenever dashboard is focused
   useEffect(() => {
-    const loadUserInfo = async () => {
-      setUserName((await AsyncStorage.getItem("name")) || "Unknown User");
-      setUserRole((await AsyncStorage.getItem("role")) || "Unknown Role");
-      setDistrict((await AsyncStorage.getItem("district")) || "Unknown District");
+    const loadClockEvents = async () => {
+      try {
+        const raw = await AsyncStorage.getItem("clockEvents");
+        setClockEvents(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        console.warn("Failed to load clock events", e);
+      }
     };
-    loadUserInfo();
-  }, []);
 
-  // Load audits & stats
-  const fetchDashboardData = async () => {
-    if (!refreshing) setIsLoading(true);
-    try {
-      const raw = await AsyncStorage.getItem("auditLogs");
-      const logs = raw ? JSON.parse(raw) : {};
-      setAuditLogs(logs);
-
-      const pending = Object.values(logs).filter((a: any) => !a.clockOut).length;
-      const assignedAudits = 4; // Example
-      setStats({ pending, assignedAudits });
-    } catch (e) {
-      console.warn("Failed to load dashboard data", e);
-      setStats({ pending: 0, assignedAudits: 0 });
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
+    if (isFocused) {
+      loadClockEvents();
     }
-  };
-
-  useEffect(() => {
-    if (isFocused) fetchDashboardData();
   }, [isFocused]);
 
+  // Assignments දත්ත ලැයිස්තුව
   const audits = [
-    { id: "1", branchName: "Colombo Main Branch", date: "2026-01-25" },
-    { id: "2", branchName: "Kandy City Center", date: "2026-01-28" },
-    { id: "3", branchName: "Galle Fort Branch", date: "2026-02-05" },
-    { id: "4", branchName: "Matara Junction", date: "2026-02-10" },
+    { id: "1", branch_name: "Colombo Main Branch", audit_date: "2026-01-25" },
+    { id: "2", branch_name: "Kandy City Center", audit_date: "2026-01-28" },
+    { id: "3", branch_name: "Galle Fort Branch", audit_date: "2026-02-05" },
+    { id: "4", branch_name: "Matara Junction", audit_date: "2026-02-10" },
   ];
 
-  const renderAuditCard = ({ item }: { item: typeof audits[0] }) => {
-    const log = auditLogs[item.id];
-    const isDone = !!log?.clockOut;
-    return (
-      <TouchableOpacity
-        activeOpacity={isDone ? 1 : 0.7}
-        style={tw`bg-white border ${isDone ? "border-green-300" : "border-blue-300"} rounded-2xl px-4 py-4 flex-row items-center mb-4 shadow-sm`}
-        onPress={() => {
-          if (!isDone)
-            navigation.navigate("AuditDetail", {
-              auditId: item.id,
-              branchName: item.branchName,
-              dateText: item.date,
-            });
-        }}
-      >
-        <View style={tw`bg-blue-50 p-3 rounded-xl mr-4`}>
-          <Ionicons name="business" size={24} color={isDone ? "#16A34A" : "#3B82F6"} />
-        </View>
-        <View style={tw`flex-1`}>
-          <Text style={tw`text-[#1E3A8A] font-bold text-base`}>{item.branchName}</Text>
-          <Text style={tw`text-gray-500 text-sm mt-1`}>
-            <Ionicons name="calendar-outline" size={12} /> {item.date}
-          </Text>
-          {isDone && (
-            <Text style={tw`text-green-600 text-xs mt-1`}>
-              Clock In: {new Date(log.clockIn).toLocaleTimeString()} | Clock Out: {new Date(log.clockOut).toLocaleTimeString()}
-            </Text>
-          )}
-        </View>
-        {!isDone && <Ionicons name="chevron-forward" size={20} color="#3B82F6" />}
-      </TouchableOpacity>
-    );
+  const pendingCount = audits.filter(
+    (a) => !clockEvents[a.id] || !clockEvents[a.id].clockOutTime,
+  ).length;
+
+  const handleLogout = () => {
+    navigation.replace("Login");
   };
 
-  const StatCard = ({ title, value, color }: { title: string; value: number; color: string }) => (
-    <View style={tw`bg-white rounded-2xl p-4 border-l-4 border-${color} shadow mb-4`}>
-      <Text style={tw`text-gray-600 text-sm`}>{title}</Text>
-      <Text style={tw`text-2xl font-bold text-${color} mt-1`}>{value}</Text>
-    </View>
+  // එක් එක් Audit Card එක Render කිරීම
+  const renderAuditItem = ({ item }: { item: (typeof audits)[0] }) => (
+    (() => {
+      const event = clockEvents[item.id];
+      const isDone = !!event?.clockOutTime;
+      const endTimeLabel = event?.clockOutTime
+        ? new Date(event.clockOutTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
+        : null;
+
+      const handlePress = () => {
+        if (isDone) {
+          Alert.alert("Already Completed", "This audit is already finished.");
+          return;
+        }
+        navigation.navigate("AuditDetail", {
+          auditId: item.id,
+          branchName: item.branch_name,
+          dateText: item.audit_date,
+        });
+      };
+
+      return (
+        <TouchableOpacity
+          activeOpacity={isDone ? 1 : 0.7}
+          style={tw`bg-white border ${
+            isDone ? "border-green-200" : "border-blue-100"
+          } rounded-2xl px-4 py-4 flex-row items-center mb-4 shadow-sm`}
+          onPress={handlePress}
+        >
+      <View style={tw`bg-blue-50 p-3 rounded-xl mr-4`}>
+        <Ionicons
+          name="business"
+          size={24}
+          color={isDone ? "#16A34A" : "#3B82F6"}
+        />
+      </View>
+
+      <View style={tw`flex-1`}>
+        <Text style={tw`text-[#1E3A8A] font-bold text-base`}>
+          {item.branch_name}
+        </Text>
+        <Text style={tw`text-gray-500 text-sm mt-1`}>
+          <Ionicons name="calendar-outline" size={12} /> {item.audit_date}
+        </Text>
+        {isDone && endTimeLabel && (
+          <Text style={tw`text-green-600 text-xs mt-1 font-semibold`}>
+            Done at {endTimeLabel}
+          </Text>
+        )}
+      </View>
+
+      {!isDone && (
+        <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+      )}
+    </TouchableOpacity>
+      );
+    })()
   );
 
   return (
     <SafeAreaView style={tw`flex-1 bg-gray-50`}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient colors={["#BAE6FD", "#38BDF8", "#1E40AF"]} style={tw`px-6 pt-12 pb-10 rounded-b-[32px]`}>
+
+      {/* HEADER SECTION */}
+      <LinearGradient
+        colors={["#BAE6FD", "#38BDF8", "#1E40AF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={tw`px-6 pt-12 pb-10 rounded-b-[32px] shadow-lg`}
+      >
         <View style={tw`flex-row justify-between items-center`}>
           <View>
-            <Text style={tw`text-blue-900 text-sm opacity-80`}>Welcome,</Text>
-            <Text style={tw`text-white text-2xl font-bold`}>Auditor Dashboard</Text>
-            <Text style={tw`text-white text-sm mt-1`}>{userName} ({userRole})</Text>
-            <Text style={tw`text-white text-sm mt-1`}>District: {district}</Text>
+            <Text style={tw`text-blue-900 text-sm font-medium opacity-80`}>
+              Welcome,
+            </Text>
+            <Text style={tw`text-white text-2xl font-bold`}>
+              Auditor Dashboard
+            </Text>
           </View>
-          <TouchableOpacity onPress={fetchDashboardData} disabled={isLoading || refreshing} style={tw`bg-blue-600 p-3 rounded-lg`}>
-            {isLoading || refreshing ? <ActivityIndicator color="white" /> : <Ionicons name="sync-outline" size={24} color="white" />}
-          </TouchableOpacity>
+          <View style={tw`bg-white/30 p-2 rounded-full border border-white/50`}>
+            <Ionicons name="person" size={30} color="white" />
+          </View>
         </View>
       </LinearGradient>
 
-      <ScrollView
-        contentContainerStyle={tw`p-5`}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              fetchDashboardData();
-            }}
-          />
-        }
-      >
-        {/* Stats */}
-        <StatCard title="Pending Audits" value={stats.pending} color="green" />
-        <StatCard title="Assigned Audits" value={stats.assignedAudits} color="blue" />
+      {/* BODY SECTION */}
+      <View style={tw`flex-1 px-5 mt-6`}>
+        <View style={tw`flex-row justify-between items-end mb-4`}>
+          <Text style={tw`text-[#1E3A8A] text-lg font-bold`}>
+            Assigned Audits
+          </Text>
+          <Text style={tw`text-blue-500 text-sm font-medium`}>
+            {pendingCount} Pending
+          </Text>
+        </View>
 
-        {/* Audit List */}
-        <Text style={tw`text-gray-800 font-semibold text-lg mt-4 mb-2`}>Assigned Audits</Text>
         <FlatList
           data={audits}
-          renderItem={renderAuditCard}
+          renderItem={renderAuditItem}
           keyExtractor={(item) => item.id}
-          scrollEnabled={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={tw`pb-10`}
+          ListEmptyComponent={
+            <View style={tw`mt-20 items-center`}>
+              <Ionicons
+                name="document-text-outline"
+                size={50}
+                color="#cbd5e1"
+              />
+              <Text style={tw`text-gray-400 mt-2`}>No assignments found</Text>
+            </View>
+          }
         />
-      </ScrollView>
+      </View>
+
+      {/* FOOTER SECTION */}
+      <View style={tw`p-6 bg-white border-t border-gray-100`}>
+        <TouchableOpacity
+          onPress={handleLogout}
+          activeOpacity={0.8}
+          style={tw`bg-[#1E40AF] flex-row justify-center items-center py-4 rounded-2xl shadow-lg`}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={22}
+            color="white"
+            style={tw`mr-2`}
+          />
+          <Text style={tw`text-white font-bold text-lg`}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };

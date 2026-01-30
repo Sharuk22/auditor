@@ -26,54 +26,92 @@ import { NotesCard } from "./widgets/NotesCard";
 
 const AuditDetailScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation();
 
   const { branchName, dateText, auditId } = route.params || {
-    branchName: "Unknown Branch",
+    branchName: "Unknown",
     dateText: new Date().toISOString().split("T")[0],
     auditId: "unknown",
   };
 
+  // States
   const [selectedDate, setSelectedDate] = useState(dateText);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState<Date | null>(null);
   const [clockOutTime, setClockOutTime] = useState<Date | null>(null);
   const [notes, setNotes] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [attachment, setAttachment] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // SAVE audit to AsyncStorage
-  const saveAudit = async (data: any) => {
-    try {
-      const raw = await AsyncStorage.getItem("auditLogs");
-      const logs = raw ? JSON.parse(raw) : {};
-      logs[auditId] = data;
-      await AsyncStorage.setItem("auditLogs", JSON.stringify(logs));
-    } catch (e) {
-      console.error("Failed to save audit:", e);
-    }
+  // Save to AsyncStorage
+  const saveClockEventToDatabase = async (data: any) => {
+    const key = "clockEvents";
+    const existingRaw = await AsyncStorage.getItem(key);
+    const existing = existingRaw ? JSON.parse(existingRaw) : {};
+
+    existing[data.auditId] = {
+      ...existing[data.auditId],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await AsyncStorage.setItem(key, JSON.stringify(existing));
   };
 
-  // CLOCK IN
-  const handleClockIn = async () => {
-    if (clockInTime) {
-      Alert.alert("Already Clocked In");
+  // CLOCK IN / CLOCK OUT = FINISH & SAVE
+  const handleClockAction = async () => {
+    const now = new Date();
+
+    // CLOCK IN
+    if (!isClockedIn) {
+      setIsClockedIn(true);
+      setClockInTime(now);
+      setClockOutTime(null);
+
+      await saveClockEventToDatabase({
+        auditId,
+        branchName,
+        date: selectedDate,
+        clockInTime: now.toISOString(),
+        notes,
+        attachment,
+      });
+
+      Alert.alert("Clocked In", now.toLocaleTimeString());
       return;
     }
-    const now = new Date();
-    setClockInTime(now);
 
-    await saveAudit({
+    // CLOCK OUT = FINISH AUDIT
+    setIsSaving(true);
+    setIsClockedIn(false);
+    setClockOutTime(now);
+
+    await saveClockEventToDatabase({
       auditId,
       branchName,
       date: selectedDate,
-      clockIn: now.toISOString(),
+      clockInTime: clockInTime?.toISOString(),
+      clockOutTime: now.toISOString(),
+      notes,
+      attachment,
     });
 
-    Alert.alert("Clock In", "Clocked in successfully");
+    setIsSaving(false);
+
+    Alert.alert("Audit Completed", "Audit finished & saved successfully", [
+      {
+        text: "OK",
+        onPress: () =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "AuditorDashboard" as never }],
+          }),
+      },
+    ]);
   };
 
-  // ATTACH FILE
+  // Attach file
   const handleAttachFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       multiple: false,
@@ -81,47 +119,21 @@ const AuditDetailScreen = () => {
     });
 
     if (!result.canceled) {
-      setAttachment(result.assets[0]);
+      const file = result.assets[0];
+      setAttachment({
+        name: file.name,
+        uri: file.uri,
+        size: file.size,
+        mimeType: file.mimeType,
+      });
     }
-  };
-
-  // FINISH & SAVE (Clock Out automatically)
-  const finishAudit = async () => {
-    if (!clockInTime) {
-      Alert.alert("Error", "Please Clock In first");
-      return;
-    }
-
-    setIsSaving(true);
-    const now = new Date();
-    setClockOutTime(now);
-
-    const auditData = {
-      auditId,
-      branchName,
-      date: selectedDate,
-      clockIn: clockInTime.toISOString(),
-      clockOut: now.toISOString(),
-      notes,
-      attachment,
-      completedAt: now.toISOString(),
-    };
-
-    await saveAudit(auditData);
-
-    setIsSaving(false);
-
-    // Navigate to dashboard after saving
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "AuditorDashboard" }],
-    });
   };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-white`}>
       <StatusBar barStyle="light-content" />
 
+      {/* HEADER */}
       <LinearGradient
         colors={["#BAE6FD", "#38BDF8", "#1E40AF"]}
         style={tw`px-4 pt-10 pb-6 rounded-b-[30px]`}
@@ -142,71 +154,74 @@ const AuditDetailScreen = () => {
 
       <ScrollView contentContainerStyle={tw`p-5 pb-10`}>
         <InfoCard title="Branch Name" value={branchName} icon="business" />
-        <DateCard date={selectedDate} onTap={() => setShowCalendar(true)} />
 
-        <Modal visible={showCalendar} transparent>
-          <View style={tw`flex-1 bg-black/50 justify-center px-6`}>
+        <DateCard date={selectedDate} onTap={() => setIsCalendarVisible(true)} />
+
+        {/* Calendar */}
+        <Modal visible={isCalendarVisible} transparent animationType="fade">
+          <View style={tw`flex-1 bg-black/50 justify-center px-5`}>
             <View style={tw`bg-white rounded-3xl p-4`}>
               <Calendar
+                current={selectedDate}
                 onDayPress={(day) => {
                   setSelectedDate(day.dateString);
-                  setShowCalendar(false);
+                  setIsCalendarVisible(false);
                 }}
                 markedDates={{
-                  [selectedDate]: { selected: true },
+                  [selectedDate]: { selected: true, selectedColor: "#1E40AF" },
                 }}
               />
-              <TouchableOpacity
-                onPress={() => setShowCalendar(false)}
-                style={tw`mt-4 py-3 bg-gray-300 rounded-xl`}
-              >
-                <Text style={tw`text-center font-bold`}>Cancel</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        {clockInTime && <ClockStatusCard isClockedIn time={clockInTime} />}
-        {clockOutTime && <ClockStatusCard isClockedIn={false} time={clockOutTime} />}
-
-        {!clockInTime && (
-          <TouchableOpacity
-            onPress={handleClockIn}
-            style={tw`rounded-2xl overflow-hidden my-4`}
-          >
-            <LinearGradient
-              colors={["#0EA5E9", "#1D4ED8"]}
-              style={tw`py-4 flex-row justify-center items-center`}
-            >
-              <Ionicons name="log-in" size={22} color="white" />
-              <Text style={tw`text-white font-bold ml-2`}>Clock In</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+        {isClockedIn && clockInTime && (
+          <ClockStatusCard isClockedIn time={clockInTime} />
+        )}
+        {!isClockedIn && clockOutTime && (
+          <ClockStatusCard isClockedIn={false} time={clockOutTime} />
         )}
 
+        {/* Attach file */}
         <TouchableOpacity
           onPress={handleAttachFile}
-          style={tw`border border-dashed border-blue-400 rounded-2xl p-4 mb-4`}
+          style={tw`mb-4 p-4 border border-dashed border-blue-400 rounded-2xl flex-row`}
         >
-          <Text style={tw`text-blue-800 font-semibold`}>
+          <Ionicons name="attach" size={20} color="#1E40AF" />
+          <Text style={tw`ml-2`}>
             {attachment ? attachment.name : "Attach file"}
           </Text>
         </TouchableOpacity>
 
         <NotesCard value={notes} onChangeText={setNotes} />
 
+        {/* CLOCK BUTTON */}
         <TouchableOpacity
-          onPress={finishAudit}
-          disabled={!clockInTime || isSaving}
-          style={tw`bg-[#1E40AF] py-4 rounded-2xl items-center mt-4`}
+          onPress={handleClockAction}
+          disabled={isSaving}
+          style={tw`mt-6 rounded-2xl overflow-hidden`}
         >
-          {isSaving ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text style={tw`text-white font-bold text-lg`}>
-              Finish & Save Audit
-            </Text>
-          )}
+          <LinearGradient
+            colors={
+              isClockedIn ? ["#F87171", "#B91C1C"] : ["#0EA5E9", "#1D4ED8"]
+            }
+            style={tw`py-4 flex-row justify-center items-center`}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Ionicons
+                  name={isClockedIn ? "checkmark-done" : "log-in"}
+                  size={24}
+                  color="white"
+                />
+                <Text style={tw`text-white text-lg font-bold ml-2`}>
+                  {isClockedIn ? "Finish & Save Audit" : "Clock In Now"}
+                </Text>
+              </>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

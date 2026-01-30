@@ -25,7 +25,7 @@ export default function App() {
       <Stack.Navigator
         initialRouteName="Splash"
         screenOptions={{
-          headerShown: false, 
+          headerShown: false, // Flutter වල වගේම custom headers භාවිතා කරන නිසා hide කරනවා
           animation: 'fade_from_bottom',
         }}
       >
@@ -35,7 +35,7 @@ export default function App() {
         {/* Login Page */}
         <Stack.Screen name="Login" component={LoginScreen} />
 
-       
+        {/* Auditor & Admin Dashboard (Flutter වල දෙකටම එකම page එක තිබූ නිසා මෙලෙස යෙදුවා) */}
         <Stack.Screen name="AuditorDashboard" component={AuditorDashboardScreen} />
 
         {/* Audit Detail Page */}
