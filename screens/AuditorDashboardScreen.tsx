@@ -136,11 +136,13 @@
 // export default AuditorDashboardScreen;
 
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   SafeAreaView,
   StatusBar,
@@ -158,6 +160,37 @@ type NavigationProp = NativeStackNavigationProp<
 
 const AuditorDashboardScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const isFocused = useIsFocused();
+
+  const [clockEvents, setClockEvents] = useState<
+    Record<
+      string,
+      {
+        auditId: string;
+        branchName: string;
+        date: string;
+        clockInTime: string | null;
+        clockOutTime: string | null;
+        updatedAt: string;
+      }
+    >
+  >({});
+
+  // Load saved clock events whenever dashboard is focused
+  useEffect(() => {
+    const loadClockEvents = async () => {
+      try {
+        const raw = await AsyncStorage.getItem("clockEvents");
+        setClockEvents(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        console.warn("Failed to load clock events", e);
+      }
+    };
+
+    if (isFocused) {
+      loadClockEvents();
+    }
+  }, [isFocused]);
 
   // Assignments දත්ත ලැයිස්තුව
   const audits = [
@@ -167,25 +200,53 @@ const AuditorDashboardScreen = () => {
     { id: "4", branch_name: "Matara Junction", audit_date: "2026-02-10" },
   ];
 
+  const pendingCount = audits.filter(
+    (a) => !clockEvents[a.id] || !clockEvents[a.id].clockOutTime,
+  ).length;
+
   const handleLogout = () => {
     navigation.replace("Login");
   };
 
   // එක් එක් Audit Card එක Render කිරීම
   const renderAuditItem = ({ item }: { item: (typeof audits)[0] }) => (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      style={tw`bg-white border border-blue-100 rounded-2xl px-4 py-4 flex-row items-center mb-4 shadow-sm`}
-      onPress={() => {
-        // Notification එක වෙනුවට දැන් මෙතැනින් Next Page එකට Move වේ
+    (() => {
+      const event = clockEvents[item.id];
+      const isDone = !!event?.clockOutTime;
+      const endTimeLabel = event?.clockOutTime
+        ? new Date(event.clockOutTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
+        : null;
+
+      const handlePress = () => {
+        if (isDone) {
+          Alert.alert("Already Completed", "This audit is already finished.");
+          return;
+        }
         navigation.navigate("AuditDetail", {
+          auditId: item.id,
           branchName: item.branch_name,
           dateText: item.audit_date,
         });
-      }}
-    >
+      };
+
+      return (
+        <TouchableOpacity
+          activeOpacity={isDone ? 1 : 0.7}
+          style={tw`bg-white border ${
+            isDone ? "border-green-200" : "border-blue-100"
+          } rounded-2xl px-4 py-4 flex-row items-center mb-4 shadow-sm`}
+          onPress={handlePress}
+        >
       <View style={tw`bg-blue-50 p-3 rounded-xl mr-4`}>
-        <Ionicons name="business" size={24} color="#3B82F6" />
+        <Ionicons
+          name="business"
+          size={24}
+          color={isDone ? "#16A34A" : "#3B82F6"}
+        />
       </View>
 
       <View style={tw`flex-1`}>
@@ -195,10 +256,19 @@ const AuditorDashboardScreen = () => {
         <Text style={tw`text-gray-500 text-sm mt-1`}>
           <Ionicons name="calendar-outline" size={12} /> {item.audit_date}
         </Text>
+        {isDone && endTimeLabel && (
+          <Text style={tw`text-green-600 text-xs mt-1 font-semibold`}>
+            Done at {endTimeLabel}
+          </Text>
+        )}
       </View>
 
-      <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+      {!isDone && (
+        <Ionicons name="chevron-forward" size={20} color="#3B82F6" />
+      )}
     </TouchableOpacity>
+      );
+    })()
   );
 
   return (
@@ -234,7 +304,7 @@ const AuditorDashboardScreen = () => {
             Assigned Audits
           </Text>
           <Text style={tw`text-blue-500 text-sm font-medium`}>
-            {audits.length} Pending
+            {pendingCount} Pending
           </Text>
         </View>
 
